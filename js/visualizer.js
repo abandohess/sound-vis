@@ -57,6 +57,8 @@ var MAX_RADIUS = 500;
 var target_radius = 50;
 var PARTICLE_SPEED = 3;
 
+timeLapse = [];
+
 // scene size
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
@@ -78,12 +80,13 @@ function getRGB(arr) {
 
   for (let i = 0; i < NUM_BINS / 3; i++) {
     blueCount += arr[i];
-    greenCount += arr[i * 2];
-    redCount += arr[i * 3];
+    greenCount +=  (1.1**i) * arr[i + Math.floor(NUM_BINS / 3)];
+    redCount += (1.3**i) * arr[i + Math.floor((2 * NUM_BINS / 3))];
   }
-  return rgbToHex(Math.floor(redCount / (NUM_BINS * MAX_COLOR_PER_BIN) * 150 + 105),
-                  Math.floor(greenCount / (NUM_BINS * MAX_COLOR_PER_BIN) * 255),
-                  Math.floor(blueCount / (NUM_BINS * MAX_COLOR_PER_BIN) * 205 + 50));
+
+  let totalCount = redCount + greenCount + blueCount;
+  // console.log(redCount, greenCount, blueCount, totalCount);
+  return rgbToHex(Math.floor(redCount/totalCount * 255), Math.floor(greenCount/totalCount * 255), Math.floor(blueCount/totalCount * 255));
 }
 
 function getParticleSpeed(startingRadius) {
@@ -200,6 +203,7 @@ function update() {
 
     let volumeRatio = getVolumeRatio(dataArrayAlt);
     target_radius = MIN_RADIUS + volumeRatio * (MAX_RADIUS - MIN_RADIUS);
+    // console.log(dataArrayAlt);
   }
 
   // add some rotation to the system
@@ -231,3 +235,15 @@ function update() {
 }
 
 requestAnimFrame(update);
+
+setInterval(function(){
+  analyser.getByteFrequencyData(dataArrayAlt);
+
+  let volumeRatio = getVolumeRatio(dataArrayAlt);
+  let height = MIN_RADIUS + volumeRatio * (MAX_RADIUS - MIN_RADIUS);
+  let color = getRGB(dataArrayAlt);
+
+  // console.log("her2e");
+
+  timeLapse.push({height: height, color: color});
+}, 100);
